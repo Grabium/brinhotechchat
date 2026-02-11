@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+tmux kill-session -t laravel-dev
+SAIL="./vendor/bin/sail"
+tmux "sail down"

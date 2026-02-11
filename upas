@@ -1,0 +1,35 @@
+#!/bin/bash
+SESSION="laravel-dev"
+
+# Define o caminho do executável em uma variável (scripts não leem aliases)
+SAIL="./vendor/bin/sail"
+
+# Garante que o projeto está "up" antes de abrir os outros painéis
+# Usamos -d aqui apenas para subir a infra base (DB, Redis)
+$SAIL up -d
+
+echo "Aguardando 5 segundos para estabilização dos serviços..."
+sleep 5
+
+# Inicia a sessão TMUX
+# Painel 0: Logs do Docker (para você ver o que acontece no MySQL/Redis)
+tmux new-session -d -s $SESSION "$SAIL logs -f"
+
+# Painel 1: Vite (Lado direito)
+tmux split-window -h "$SAIL npm run dev"
+
+# Painel 2: Reverb (Abaixo do Vite)
+tmux split-window -v "$SAIL artisan reverb:start --debug"
+
+# Painel 3: Queue (Abaixo dos Logs)
+tmux select-pane -t 0
+tmux split-window -v "$SAIL artisan queue:work"
+
+# Painel 4: Terminal livre para desenvolvimento (Lado direito da Queue)
+tmux split-window -h
+
+# Ajusta o foco para o painel de comando (Painel 4)
+tmux select-pane -t 4
+
+# Anexa à sessão
+tmux attach-session -t $SESSION
