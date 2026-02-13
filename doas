@@ -1,6 +1,22 @@
 #!/bin/bash
 
 
-tmux kill-session -t laravel-dev
+# kill-session -t laravel-dev
+# SAIL="./vendor/bin/sail"
+# $SAIL down
+
+SESSION="laravel-dev"
 SAIL="./vendor/bin/sail"
-tmux "sail down"
+
+echo "Limpando ambiente..."
+
+# Fecha o Tmux primeiro para evitar que ele tente reiniciar algo
+tmux kill-session -t $SESSION 2>/dev/null
+
+# Derruba o Docker
+$SAIL down
+
+echo "Ambiente encerrado. Fechando terminal..."
+
+# Fecha a janela do terminal atual
+kill -9 $PPID

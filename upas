@@ -9,7 +9,16 @@ SAIL="./vendor/bin/sail"
 $SAIL up -d
 
 echo "Aguardando 5 segundos para estabilização dos serviços..."
-sleep 5
+sleep 1
+echo "Aguardando 4 segundos para estabilização dos serviços..."
+sleep 1
+echo "Aguardando 3 segundos para estabilização dos serviços..."
+sleep 1
+echo "Aguardando 2 segundos para estabilização dos serviços..."
+sleep 1
+echo "Aguardando 1 segundos para estabilização dos serviços..."
+sleep 1
+echo "Seguindo..."
 
 # Inicia a sessão TMUX
 # Painel 0: Logs do Docker (para você ver o que acontece no MySQL/Redis)
@@ -27,9 +36,8 @@ tmux split-window -v "$SAIL artisan queue:work"
 
 # Painel 4: Terminal livre para desenvolvimento (Lado direito da Queue)
 tmux split-window -h
-
 # Ajusta o foco para o painel de comando (Painel 4)
-tmux select-pane -t 4
+tmux select-pane -t 5
 
 # Anexa à sessão
 tmux attach-session -t $SESSION
