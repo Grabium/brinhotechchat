@@ -7,6 +7,8 @@ use App\Services\TalkService;
 use Livewire\Component;
 use App\Models\Talk;
 use App\Models\User;
+use Illuminate\Http\FileHelpers;
+use Illuminate\Support\Facades\Redis;
 
 class Chat extends Component
 {
@@ -14,6 +16,7 @@ class Chat extends Component
     public string $newMessage = '';
     public $messages; //  type-hiting de \Illuminate\Database\Eloquent\Collection no Livewire gera erro.
     public $users;    // type-hiting de \Illuminate\Database\Eloquent\Collection no Livewire gera erro.
+    public array $onlineUsers = [];
     public ?User $guestUser = null;
     public ?Talk $talk = null;
 
@@ -54,7 +57,6 @@ class Chat extends Component
     public function setTalk(int|null $guestUserId)
     {   
         $this->users = app(UserService::class)->getOthrerUsers();
-
         if(is_null($guestUserId)){
             $this->highlightMessage = 'Click em algum usuário para iniciar o chat';
             $guestUserId = auth()->id();
@@ -72,9 +74,7 @@ class Chat extends Component
     public function getListeners()
     {
         $userId = auth()->id();
-        // $talkId = $this->talk->id;
-
-
+        
         return [
             "echo-private:receiver.{$userId},MessageSentEvent" => 'updateAllMessagesOfThisTalk',
         ];
@@ -83,5 +83,18 @@ class Chat extends Component
     public function updateAllMessagesOfThisTalk(): void
     {
         $this->messages = app(\App\Services\MessageService::class)->getAllMessagesOfTalk(talkId: $this->talk->id);
+    }
+
+    // Este método será chamado via Alpine/Echo quando a lista mudar
+    public function updateOnlineUsers(array $onlineIds)
+    {
+        Redis::set('users_online', json_encode($onlineIds));
+        //$this->users = app(UserService::class)->getOthrerUsers();
+    }
+
+    public function isOnline($id):bool
+    {
+        $usersOnline = json_decode(Redis::get('users_online'));
+        return in_array($id, $usersOnline);
     }
 }

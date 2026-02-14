@@ -34,15 +34,29 @@
                         </div>
                         <div class="col-md-3">
                             <div class="chat-users">
-                                <div class="users-list">
+                                <div class="users-list" 
+                                    x-data="{ onlineIds: [] }"
+                                    x-init="
+                                    Echo.join('chat.online')
+                                        .here((users) => {
+                                            onlineIds = users.map(u => u.id);
+                                            console.log(onlineIds);
+                                            $wire.updateOnlineUsers(onlineIds);
+                                        })
+                                        .joining((user) => {
+                                            onlineIds.push(user.id);
+                                            console.log(onlineIds);
+                                            $wire.updateOnlineUsers(onlineIds);
+                                        })
+                                        .leaving((user) => {
+                                            onlineIds = onlineIds.filter(id => id !== user.id);
+                                            console.log(onlineIds);
+                                            $wire.updateOnlineUsers(onlineIds);
+                                        });"
+                                >
                                     @foreach ($users as $user)
                                     
                                         <div class="chat-user">
-                                            
-                                            <span 
-                                                id="user-status-{{ $user->id }}" 
-                                                class="pull-right label label-primary"
-                                            >{{ $user->last_seen ? 'Online' : 'Offline' }}</span>
                                             
                                             <a wire:click="setTalk({{ $user->id }})" href="#">
                                                 <img class="chat-avatar" 
@@ -50,10 +64,15 @@
                                                     alt="Image and link to {{ $user->name }}'s profile"
                                                 >
                                             </a>
-                                            
+
                                             <div class="chat-user-name">
                                                 <a wire:click="setTalk({{ $user->id }})" href="#">{{ $user->name }}</a>
                                             </div>
+                                            
+                                            <span 
+                                                id="user-status-{{ $user->id }}" 
+                                                class="pull-right label label-primary"
+                                            >{{ $this->isOnline( $user->id ) ? 'On' : 'Off';}}</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -73,10 +92,10 @@
                                             placeholder="Enter message text and press enter" >
                                         </textarea>
                                     </div>
+                                    {{-- <livewire:components::textarea newMessage="{{$newMessage}}" placeholder="Enter message text and press enter"/> --}}
                                     <br>
-                                    <div class="form-group">
-                                        <button type="submit" class="btn btn-primary">Send</button>
-                                    </div>
+                                    <livewire:components::button>{{__('Send')}}</livewire:components::button>
+                                   
                                 </div>
                             </div>
                         </form>

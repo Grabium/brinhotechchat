@@ -1,3 +1,3 @@
 <x-app-layout>
-    @livewire('pages.chat')
+    <livewire:pages.chat/>
 </x-app-layout>
